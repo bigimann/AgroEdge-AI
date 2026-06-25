@@ -1,0 +1,22 @@
+# Virtual Environment Folder
+venv/
+.venv/
+
+# Python Cache Files
+**/__pycache__/
+*.pyc
+
+# Local Database & Model Caches
+chroma_db/
+.cache/
+processed/vector_db/
+
+# Raw Data/PDF Files (Keep your repository lightweight)
+knowledge_base/raw_pdfs/
+processed/extracted_text/
+processed/cleaned_text/
+processed/chunks/
+
+# OS Specific Hidden Files
+.DS_Store
+Thumbs.db
