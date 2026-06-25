@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------
+   AgroEdge AI design tokens
+   Palette grounded in field/harvest materials, not generic AI defaults:
+   - ink:        cultivated-soil near-black, primary text
+   - field:      dry-season parchment, page background
+   - husk:       pale husk, card surfaces
+   - leaf:       working leaf-green, primary accent / actions
+   - leaf-deep:  deeper leaf, hover/active states
+   - harvest:    turmeric gold, citations / sources / "grounded in data"
+   - terracotta: soil red, used sparingly for alerts/offline states
+   ------------------------------------------------------------------- */
+:root {
+  --ink: #1f2e1c;
+  --field: #f7f4eb;
+  --husk: #ece6d4;
+  --leaf: #3d5a33;
+  --leaf-deep: #2d4326;
+  --harvest: #b9842f;
+  --terracotta: #9a4a2c;
+  --line: #d9d2b9;
+
+  --font-display: "Source Serif 4", serif;
+  --font-body: Inter, sans-serif;
+  --font-utility: "IBM Plex Mono", monospace;
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-field: var(--field);
+  --color-husk: var(--husk);
+  --color-leaf: var(--leaf);
+  --color-leaf-deep: var(--leaf-deep);
+  --color-harvest: var(--harvest);
+  --color-terracotta: var(--terracotta);
+  --color-line: var(--line);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-utility: var(--font-utility);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+}
+
+/* Visible keyboard focus everywhere, never suppressed */
+:focus-visible {
+  outline: 2px solid var(--leaf);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Subtle woven-paper texture for the page background, evoking a
+   field manual rather than a slick app surface. Pure CSS, no image. */
+.texture-field {
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(31, 46, 28, 0.05) 1px, transparent 0);
+  background-size: 18px 18px;
+}
+
+@keyframes pulse-signal {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.animate-signal {
+  animation: pulse-signal 2.2s ease-in-out infinite;
+}
