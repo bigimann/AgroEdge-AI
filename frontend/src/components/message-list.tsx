@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import type { ChatMessage } from "./../types/chat.ts";
-import { ChatBubble } from "./chat-bubble";
-import { ThinkingIndicator } from "./thinking-indicator";
+import type { ChatMessage } from "../types/chat.js";
+import { ChatBubble } from "./chat-bubble.js";
+import { ThinkingIndicator } from "./thinking-indicator.js";
 
 export function MessageList({
   messages,
