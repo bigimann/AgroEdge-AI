@@ -1,5 +1,5 @@
 import { BookText, AlertTriangle } from "lucide-react";
-import type { ChatMessage } from "../types/chat.js";
+import type { ChatMessage } from "../types/chat";
 import { cn } from "@/lib/utils";
 
 export function ChatBubble({ message }: { message: ChatMessage }) {

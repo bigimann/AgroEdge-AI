@@ -1,6 +1,7 @@
 # Virtual Environment Folder
 venv/
 .venv/
+.env.local
 
 # Python Cache Files
 **/__pycache__/

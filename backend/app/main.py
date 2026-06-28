@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import os
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -28,15 +29,16 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS: allow the Next.js frontend (default dev port 3000) to call this API.
-# Adjust origins via env var in production rather than hardcoding.
+# CORS: allow the Next.js frontend to call this API. Defaults to the local
+# dev origin; override with a comma-separated list via CORS_ORIGINS for
+# Docker or deployed setups (e.g. "http://frontend:3000,http://localhost:3000").
+
+_default_origins = "http://localhost:3000,http://127.0.0.1:3000"
+_cors_origins = os.environ.get("CORS_ORIGINS", _default_origins).split(",")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=[origin.strip() for origin in _cors_origins if origin.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

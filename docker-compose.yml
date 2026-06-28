@@ -1,0 +1,52 @@
+# AgroEdge AI — docker-compose
+#
+# Runs the FastAPI backend and Next.js frontend in containers. Ollama is
+# deliberately NOT included here — it runs natively on your machine
+# (see root README for why). Make sure `ollama serve` / the Ollama app
+# is running BEFORE starting these containers, or every chat request
+# will fail.
+#
+# Usage:
+#   docker compose up --build
+#
+# Then visit http://localhost:3000
+
+services:
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount the existing chroma_db so the container reads the same
+      # vector store your local pipeline already populated, rather than
+      # baking a copy into the image.
+      - ./chroma_db:/data/chroma_db
+    environment:
+      CHROMA_DB_PATH: /data/chroma_db
+      # extra_hosts below maps this hostname to the host machine's
+      # gateway IP on Linux. On Docker Desktop (Mac/Windows),
+      # host.docker.internal resolves automatically without the mapping.
+      OLLAMA_HOST: http://host.docker.internal:11434
+      CORS_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
+      LLM_MODEL_NAME: qwen2.5:3b
+    extra_hosts:
+      # Makes host.docker.internal resolve on Linux too, where it isn't
+      # automatic the way it is on Docker Desktop. Harmless no-op on
+      # Mac/Windows since the name already resolves there.
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Baked into the client bundle at build time (see frontend/Dockerfile
+        # comment). This is the URL the BROWSER uses, so it must be the
+        # published host port, not an internal Docker service name.
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped

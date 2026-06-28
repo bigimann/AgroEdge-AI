@@ -11,24 +11,51 @@ agro_rag.py script as reusable functions, so the underlying pipeline
 - prompt template: identical to agro_rag.py
 """
 
+import os
 from pathlib import Path
 from functools import lru_cache
 
+from dotenv import load_dotenv
 import chromadb
+
+os.environ.setdefault("HF_HUB_OFFLINE", "1")
+
 from sentence_transformers import SentenceTransformer
 import ollama
 
+# Load backend/.env if present (no-op in Docker, where env vars are passed
+# in directly via docker-compose and there is no .env file to find).
+
+load_dotenv(Path(__file__).resolve().parent.parent.parent / ".env")
 
 # Paths
 
 # backend/app/services/rag_service.py -> backend/app -> backend -> project root
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
-CHROMA_DB_PATH = str(PROJECT_ROOT / "chroma_db")
+
+# CHROMA_DB_PATH can be overridden via env var (e.g. when running inside
+# Docker, where chroma_db is mounted at a fixed container path rather than
+# resolved relative to this file). Falls back to the same relative-path
+# resolution used in plain venv setups.
+
+CHROMA_DB_PATH = os.environ.get("CHROMA_DB_PATH", str(PROJECT_ROOT / "chroma_db"))
+
+# OLLAMA_HOST can be overridden via env var. Needed in Docker, where the
+# backend container must reach Ollama running natively on the host machine
+# (e.g. http://host.docker.internal:11434) rather than localhost. Plain
+# venv setups don't need to set this — the ollama library defaults to
+# http://localhost:11434 on its own.
+
+OLLAMA_HOST = os.environ.get("OLLAMA_HOST")
+if OLLAMA_HOST:
+    _ollama_client = ollama.Client(host=OLLAMA_HOST)
+else:
+    _ollama_client = ollama
 
 COLLECTION_NAME = "agriculture"
 EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
-LLM_MODEL_NAME = "qwen2.5:3b"
+LLM_MODEL_NAME = os.environ.get("LLM_MODEL_NAME", "qwen2.5:3b")
 TOP_K = 3
 
 PROMPT_TEMPLATE = """
@@ -48,6 +75,8 @@ Question:
 
 Answer:
 """
+
+
 
 # Lazily-loaded singletons
 
@@ -75,8 +104,9 @@ def warm_up():
     get_embedder()
     get_collection()
 
+
+
 # Core RAG logic (same steps as agro_rag.py, just callable)
-# 
 
 def retrieve(question: str, n_results: int = TOP_K):
     """
@@ -123,7 +153,7 @@ def generate_answer(question: str, context: str) -> str:
     """
     prompt = PROMPT_TEMPLATE.format(context=context, question=question)
 
-    response = ollama.chat(
+    response = _ollama_client.chat(
         model=LLM_MODEL_NAME,
         messages=[
             {"role": "user", "content": prompt}
